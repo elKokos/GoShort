@@ -2,8 +2,9 @@ package auth
 
 import (
 	"GoShort/configs"
+	"GoShort/pkg/req"
 	"GoShort/pkg/res"
-	"log"
+	"fmt"
 	"net/http"
 )
 
@@ -17,19 +18,34 @@ type AuthHandler struct {
 
 func NewAuthHandler(router *http.ServeMux, deps AuthConfig) {
 	handler := &AuthHandler{deps.Config}
-	router.HandleFunc("POST /auth/login", handler.Login)
-	router.HandleFunc("POST /auth/register", handler.Register)
+	router.HandleFunc("POST /auth/login", handler.Login())
+	router.HandleFunc("POST /auth/register", handler.Register())
 }
 
-func (handler *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	log.Println(handler.Config.Auth.Secret)
-	log.Println("Login")
-	data := LoginResponse{
-		Token: "123",
+func (handler *AuthHandler) Login() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[LoginRequest](&w, r)
+		if err != nil {
+			return
+		}
+		fmt.Println(body)
+		data := LoginResponse{
+			Token: "123",
+		}
+		res.Json(w, data, http.StatusOK)
 	}
-	res.Json(w, data, http.StatusCreated)
 }
 
-func (handler *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	log.Println("Register")
+func (handler *AuthHandler) Register() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[RegisterRequest](&w, r)
+		if err != nil {
+			return
+		}
+		fmt.Println(body)
+		data := RegisterResponse{
+			Token: "123",
+		}
+		res.Json(w, data, http.StatusOK)
+	}
 }
