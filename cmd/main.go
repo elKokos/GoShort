@@ -3,6 +3,8 @@ package main
 import (
 	"GoShort/configs"
 	"GoShort/internal/auth"
+	"GoShort/internal/link"
+	"GoShort/pkg/db"
 	"log"
 	"net/http"
 	"time"
@@ -10,8 +12,16 @@ import (
 
 func main() {
 	conf := configs.LoadConfig()
+	db, _ := db.New(conf)
 	router := http.NewServeMux()
+
+	linkRepository := link.NewLinkRepository(db)
+
+	//auth
 	auth.NewAuthHandler(router, auth.AuthConfig{conf})
+
+	//link
+	link.NewLinkHandler(router, link.LinkConfig{LinkRepository: linkRepository})
 
 	server := &http.Server{
 		Addr:         ":8080",
